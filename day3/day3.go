@@ -8,6 +8,56 @@ import (
 )
 
 func main() {
+	part1()
+	part2()
+}
+
+func part2() {
+	file, err := os.Open("./day3/input.txt")
+	if err != nil {
+		log.Fatal()
+	}
+
+	score := 0
+	group := []string{}
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		rucksack := scanner.Text()
+		group = append(group, rucksack)
+		if len(group) == 3 {
+			score += findGroupBadgeItemPriority(group)
+			group = []string{}
+		}
+	}
+
+	fmt.Println("Part 2 score is:", score)
+}
+
+func findGroupBadgeItemPriority(group []string) int {
+	rucksack1 := group[0]
+	rucksack2 := group[1]
+	rucksack3 := group[2]
+
+	badgeItem := ""
+	for _, item1 := range rucksack1 {
+		for _, item2 := range rucksack2 {
+			if item1 == item2 {
+				for _, item3 := range rucksack3 {
+					if item1 == item3 {
+						badgeItem = string(item1)
+						break
+					}
+				}
+				break
+			}
+		}
+	}
+
+	return priorityMap[badgeItem]
+}
+
+func part1() {
 	file, err := os.Open("./day3/input.txt")
 	if err != nil {
 		log.Fatal()
