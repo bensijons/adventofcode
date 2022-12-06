@@ -17,6 +17,7 @@ func main() {
 	scanner := bufio.NewScanner(file)
 
 	count := 0
+	part2count := 0
 
 	for scanner.Scan() {
 		pair := scanner.Text()
@@ -27,10 +28,13 @@ func main() {
 		if fullyContains(assignment1, assignment2) {
 			count++
 		}
+		if overlaps(assignment1, assignment2) {
+			part2count++
+		}
 	}
 
 	fmt.Println("Part 1 answer is:", count)
-
+	fmt.Println("Part 2 answer is:", part2count)
 }
 
 type Assignment struct {
@@ -42,6 +46,10 @@ type Assignment struct {
 func fullyContains(a Assignment, b Assignment) bool {
 	return a.Start <= b.Start && b.End <= a.End ||
 		b.Start <= a.Start && a.End <= b.End
+}
+
+func overlaps(a Assignment, b Assignment) bool {
+	return a.Start <= b.Start && a.End >= b.Start || b.Start <= a.Start && b.End >= a.Start
 }
 
 func splitPair(pair string) (string, string) {
