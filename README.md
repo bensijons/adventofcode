@@ -1,3 +1,1 @@
-# Advent of code 2022
-
-Merry christmas?
+# 🎅 Advent of code 2022 🧑‍🎄
