@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
 // [D]
@@ -26,32 +28,47 @@ func main() {
 	scanner := bufio.NewScanner(file)
 
 	initializing := true
-	intialStackLines := []string{}
+	initialStackLines := []string{}
 	crates := map[int][]string{}
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		if line == "" {
+		if initializing && line == "" {
 			initializing = false
+			initializeStack(crates, initialStackLines)
 		} else if initializing {
-			intialStackLines = append(intialStackLines, line)
+			initialStackLines = append(initialStackLines, line)
+		} else {
+			// initialization done, start making moves
+			count, from, to := readNextMove(line)
+			moveCrates(crates, count, from, to)
 		}
-	}
-	initializeStack(crates, intialStackLines)
-
-	stackMap := map[int][]string{}
-	stackMap[1] = []string{"Z", "N", "D"}
-	stackMap[2] = []string{"M", "C"}
-	stackMap[3] = []string{"P"}
-	move(stackMap, 1, 2, 1)
-	for i := 1; i <= len(stackMap); i++ {
-		// sl := stackMap[i]
-		// fmt.Println(sl[len(sl)-1])
 	}
 
 	fmt.Println("Day 5 part 1 answer is")
+	answer := ""
+	for i := 1; i <= len(crates); i++ {
+		sl := crates[i]
+		answer = fmt.Sprintf("%s%s", answer, sl[len(sl)-1])
+	}
+	fmt.Println(answer)
 }
 
+// initializeStack, accepting an empty stack and lines that look like the following:
+//
+// [N]     [C]                 [Q]
+// [W]     [J] [L]             [J] [V]
+// [F]     [N] [D]     [L]     [S] [W]
+// [R] [S] [F] [G]     [R]     [V] [Z]
+// [Z] [G] [Q] [C]     [W] [C] [F] [G]
+// [S] [Q] [V] [P] [S] [F] [D] [R] [S]
+// [M] [P] [R] [Z] [P] [D] [N] [N] [M]
+// [D] [W] [W] [F] [T] [H] [Z] [W] [R]
+//  1   2   3   4   5   6   7   8   9
+//
+// altering the map into a map where the bottom
+// line is the key of each entry in the map
+// and the values are read from bottom up
 func initializeStack(stack map[int][]string, lines []string) {
 	for lineIndex := len(lines) - 2; lineIndex >= 0; lineIndex-- {
 		for crateIndex, k := 1, 1; crateIndex < len(lines[lineIndex]); crateIndex += 4 {
@@ -66,13 +83,32 @@ func initializeStack(stack map[int][]string, lines []string) {
 	}
 }
 
-func move(stackMap map[int][]string, count int, from int, to int) {
-	toStack := stackMap[to]
-	fromStack := stackMap[from]
+func readNextMove(line string) (count int, from int, to int) {
+	l := strings.Split(line, " ")
+	count, err := strconv.Atoi(l[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	from, err = strconv.Atoi(l[3])
+	if err != nil {
+		log.Fatal(err)
+	}
+	to, err = strconv.Atoi(l[5])
+	if err != nil {
+		log.Fatal(err)
+	}
+	return count, from, to
+}
 
-	toStack = append(toStack, fromStack[len(fromStack)-1])
-	fromStack = fromStack[:len(fromStack)-1]
+func moveCrates(stackMap map[int][]string, count int, from int, to int) {
+	for i := 0; i < count; i++ {
+		toStack := stackMap[to]
+		fromStack := stackMap[from]
 
-	stackMap[from] = fromStack
-	stackMap[to] = toStack
+		toStack = append(toStack, fromStack[len(fromStack)-1])
+		fromStack = fromStack[:len(fromStack)-1]
+
+		stackMap[from] = fromStack
+		stackMap[to] = toStack
+	}
 }
