@@ -9,16 +9,6 @@ import (
 	"strings"
 )
 
-// [D]
-// [N] [C]
-// [Z] [M] [P]
-//  1   2   3
-
-// move 1 from 2 to 1
-// move 3 from 1 to 3
-// move 2 from 2 to 1
-// move 1 from 1 to 2
-
 func main() {
 	file, err := os.Open("./day5/input.txt")
 	if err != nil {
@@ -30,22 +20,28 @@ func main() {
 	initializing := true
 	initialStackLines := []string{}
 	crates := map[int][]string{}
+	cratesPartTwo := map[int][]string{}
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if initializing && line == "" {
 			initializing = false
 			initializeStack(crates, initialStackLines)
+			initializeStack(cratesPartTwo, initialStackLines)
 		} else if initializing {
 			initialStackLines = append(initialStackLines, line)
 		} else {
-			// initialization done, start making moves
+			// initialization done, start moving crates
 			count, from, to := readNextMove(line)
 			moveCrates(crates, count, from, to)
+			moveCratesPartTwo(cratesPartTwo, count, from, to)
 		}
 	}
+	printAnswer(crates)
+	printAnswer(cratesPartTwo)
+}
 
-	fmt.Println("Day 5 part 1 answer is")
+func printAnswer(crates map[int][]string) {
 	answer := ""
 	for i := 1; i <= len(crates); i++ {
 		sl := crates[i]
@@ -111,4 +107,16 @@ func moveCrates(stackMap map[int][]string, count int, from int, to int) {
 		stackMap[from] = fromStack
 		stackMap[to] = toStack
 	}
+}
+
+func moveCratesPartTwo(stackMap map[int][]string, count int, from int, to int) {
+	toStack := stackMap[to]
+	fromStack := stackMap[from]
+
+	fl := len(fromStack)
+	toStack = append(toStack, fromStack[fl-count:fl]...)
+	fromStack = fromStack[:fl-count]
+
+	stackMap[from] = fromStack
+	stackMap[to] = toStack
 }
