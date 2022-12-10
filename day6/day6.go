@@ -16,14 +16,15 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		input := scanner.Text()
-		fmt.Println("Day 6 part 1 answer is:", FindMarkerIndex(input))
+		fmt.Println("Day 6 part 1 answer is:", FindMarkerIndex(input, 4))
+		fmt.Println("Day 6 part 2 answer is:", FindMarkerIndex(input, 14))
 	}
 }
 
-func FindMarkerIndex(input string) int {
-	for i := 0; i < len(input)-3; i++ {
-		if hasNoDuplicateChars(input[i : i+4]) {
-			return i + 4
+func FindMarkerIndex(input string, markerCount int) int {
+	for i := 0; i < len(input)-markerCount-1; i++ {
+		if hasNoDuplicateChars(input[i : i+markerCount]) {
+			return i + markerCount
 		}
 	}
 	fmt.Println("No marker found")
