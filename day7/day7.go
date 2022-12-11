@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -26,6 +27,7 @@ func main() {
 		folders = ParseCommands(folders, line, sizeMap)
 	}
 	CalculateTotalSize(sizeMap)
+	FindFolderToDelete(sizeMap, 70000000)
 }
 
 func ParseCommands(folders []string, line string, sizeMap map[string]int) []string {
@@ -68,11 +70,37 @@ func getFolderPath(parentFolderPath string, folder string) string {
 
 func CalculateTotalSize(sizeMap map[string]int) {
 	sum := int(0)
-	for k, folderSize := range sizeMap {
+	for _, folderSize := range sizeMap {
 		if folderSize <= 100000 {
 			sum += folderSize
 		}
-		fmt.Println("Folder", k, ", size", folderSize)
 	}
 	fmt.Println("sum", sum)
+}
+
+type Folder struct {
+	Name string
+	Size int
+}
+
+func FindFolderToDelete(sizeMap map[string]int, totalSpace int) {
+	unusedSpace := totalSpace - sizeMap["/"]
+	desiredSpace := 30000000
+	spaceToFreeUp := desiredSpace - unusedSpace
+
+	folders := []Folder{}
+	for folderName, folderSize := range sizeMap {
+		folders = append(folders, Folder{Name: folderName, Size: folderSize})
+	}
+
+	sort.Slice(folders, func(i, j int) bool {
+		return folders[i].Size < folders[j].Size
+	})
+
+	for _, folder := range folders {
+		if folder.Size > spaceToFreeUp {
+			fmt.Println("The folder to delete is", folder)
+			break
+		}
+	}
 }
