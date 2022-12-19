@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 )
 
 func main() {
-	file, err := os.Open("./day8/test.txt")
+	file, err := os.Open("./day8/input.txt")
 	if err != nil {
-		log.Fatal()
+		log.Fatal(err)
 	}
 	scanner := bufio.NewScanner(file)
 	lines := []string{}
@@ -18,60 +19,72 @@ func main() {
 		lines = append(lines, scanner.Text())
 	}
 
-	grid := TreeGrid{}
-	numberOfVisibleTrees := 0
+	visibleTrees := make(map[string]bool)
+	findVisibleTreesLeftAndTop(visibleTrees, lines)
+	findVisibleTreesRightAndDown(visibleTrees, lines)
 
+	fmt.Println("Day 8 part 1 answer is:", len(visibleTrees))
+}
+
+func findVisibleTreesLeftAndTop(visibleTrees map[string]bool, lines []string) {
+	largestTop := make(map[int]int)
+	largestLeft := 0
 	for i := 0; i < len(lines); i++ {
-		if i == 0 {
-			numberOfVisibleTrees += len(lines[0])
-			continue
+		line := lines[i]
+		for j, c := range line {
+			current, _ := strconv.Atoi(string(c))
+			if i == 0 || i == len(lines)-1 {
+				largestTop[j] = current
+				setVisible(visibleTrees, i, j)
+				continue
+			}
+			if j == 0 || j == len(line)-1 {
+				largestLeft = current
+				setVisible(visibleTrees, i, j)
+				continue
+			}
+			if current > largestLeft {
+				largestLeft = current
+				setVisible(visibleTrees, i, j)
+			}
+			if current > largestTop[j] {
+				largestTop[j] = current
+				setVisible(visibleTrees, i, j)
+			}
 		}
-		grid.previous = &lines[i-1]
-		grid.current = &lines[i]
-
-		if i == len(lines)-1 {
-			grid.next = nil
-		} else {
-			grid.next = &lines[i+1]
-		}
-		fmt.Println(i)
-		numberOfVisibleTrees += countInnerVisibleTrees(grid)
 	}
-	fmt.Println(numberOfVisibleTrees)
 }
 
-type TreeGrid struct {
-	previous *string
-	current  *string
-	next     *string
+func findVisibleTreesRightAndDown(visibleTrees map[string]bool, lines []string) {
+	largestDown := make(map[int]int)
+	largestRight := 0
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := lines[i]
+		for j := len(line) - 1; j >= 0; j-- {
+			current, _ := strconv.Atoi(string(line[j]))
+			if i == 0 || i == len(lines)-1 {
+				largestDown[j] = current
+				setVisible(visibleTrees, i, j)
+				continue
+			}
+			if j == 0 || j == len(line)-1 {
+				largestRight = current
+				setVisible(visibleTrees, i, j)
+				continue
+			}
+			if current > largestRight {
+				largestRight = current
+				setVisible(visibleTrees, i, j)
+			}
+			if current > largestDown[j] {
+				largestDown[j] = current
+				setVisible(visibleTrees, i, j)
+			}
+		}
+	}
 }
 
-func countInnerVisibleTrees(grid TreeGrid) int {
-	if grid.previous == nil || grid.next == nil {
-		return len(*grid.current)
-	}
-
-	count := 0
-
-	for i := 0; i < len(*grid.current)-1; i++ {
-		if i == 0 || i == len(*grid.current)-1 {
-			count++
-			continue
-		}
-		current := *grid.current
-		previous := *grid.previous
-		next := *grid.next
-		visibleUp := current[i] > previous[i]
-		visibleDown := current[i] > next[i]
-		visibleLeft := current[i] > current[i-1]
-		visibleRight := current[i] > current[i+1]
-		fmt.Println(i)
-		fmt.Println("visibleDown", visibleDown, visibleUp, visibleLeft, visibleRight)
-
-		if visibleUp || visibleDown || visibleLeft || visibleRight {
-			count++
-		}
-	}
-
-	return count
+func setVisible(visibleTrees map[string]bool, i, j int) {
+	key := fmt.Sprintf("%d-%d", i, j)
+	visibleTrees[key] = true
 }
