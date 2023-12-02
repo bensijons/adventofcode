@@ -21,7 +21,7 @@ var numericStrings = []string{
 }
 
 func main() {
-	// part1()
+	part1()
 	part2()
 }
 
