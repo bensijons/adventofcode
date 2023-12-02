@@ -1,3 +1,3 @@
-module github.com/bensijons/advent-of-code-2022
+module github.com/bensijons/adventofcode
 
 go 1.18
